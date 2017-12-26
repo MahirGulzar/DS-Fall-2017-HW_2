@@ -6,7 +6,7 @@ sys.path.append(os.path.join("objects"))
 sys.path.append(os.path.join("Server Side"))
 sys.path.append(os.path.join("Client Side"))
 from GameResources import *
-import Client_Handler
+import Reception_Handler
 import select, socket, sys
 import pychat_util
 import threading
@@ -242,16 +242,16 @@ def refresh_query():
 
         for i in range(9):
             for j in range(9):
-                if(Client_Handler.MainGrid[i][j] is not grid[i][j]):
-                    print("Old = ",Client_Handler.MainGrid[i][j])
+                if(Reception_Handler.MainGrid[i][j] is not grid[i][j]):
+                    print("Old = ", Reception_Handler.MainGrid[i][j])
                     print("New = ",grid[i][j])
                     x= 9*(i)
                     y= x+j
-                    Client_Handler.theSquares[y].change(grid[i][j])
+                    Reception_Handler.theSquares[y].change(grid[i][j])
                     print('i  and j = ',i,j)
                     print('location = %d'%y)
                     print('number = ',grid[i][j])
-        Client_Handler.MainGrid = grid
+        Reception_Handler.MainGrid = grid
     except:
         print('')
 
@@ -302,10 +302,10 @@ while True:
                             server_connection.sendall(msg_prefix.encode())
                             continue
 
-                        elif 'welcomes' in msg.decode() and Client_Handler.inroom is False:
+                        elif 'welcomes' in msg.decode() and Reception_Handler.inroom is False:
                             #print('WElcome...')
                             grid=msg.replace("welcomes: ", "")      # replace signature term with empty and
-                            handle = Client_Handler.Handler()       # Client Handler Handle class object
+                            handle = Reception_Handler.Handler()       # Client Handler Handle class object
 
                             # Threads to operate client's reception and game GUI
                             game = threading.Thread(target=handle.Initial_Reception, args=(grid,name,s))
@@ -315,7 +315,7 @@ while True:
                             game.join()
                             refreshloop.join()
 
-                            Client_Handler.inroom=True
+                            Reception_Handler.inroom=True
 
                         elif 'selection' in msg.decode():
 
@@ -328,12 +328,12 @@ while True:
                         else:
                             msg_prefix = ''
 
-                        if(Client_Handler.inroom is False):
+                        if(Reception_Handler.inroom is False):
                             prompt()
 
             else:
                 #print(Client_Handler.inroom)
-                if(Client_Handler.inroom is False):
+                if(Reception_Handler.inroom is False):
 
                     #print('Waiting for client input...')
                     msg = msg_prefix + sys.stdin.readline()
