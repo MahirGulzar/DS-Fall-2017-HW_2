@@ -101,6 +101,20 @@ class Hall:
     def Get_Grid(self,room_name):
         return self.rooms[room_name].Update_Grid()
 
+
+
+    def update_index_value(self,msg,room):
+        coordinate_string = msg.replace("u:", "")
+        coordinate_string2 = coordinate_string.replace(",", " ")
+        coordinate_list_int = []
+        coordinate_list_int.append(int(coordinate_string2.split()[0]))
+        coordinate_list_int.append(int(coordinate_string2.split()[1]))
+        coordinate_list_int.append(int(coordinate_string2.split()[2]))
+
+        self.rooms[room].gameObject.setNum(coordinate_list_int[0], coordinate_list_int[1],
+                                                       coordinate_list_int[2])
+
+        return None
     # def welcome_new(self, new_player):
     #     #new_player.socket.sendall(b'Welcome to pychat.\nPlease tell us your name:\n')
     #     self.list_rooms(new_player)

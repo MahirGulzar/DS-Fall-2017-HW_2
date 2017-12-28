@@ -11,7 +11,13 @@ import select, socket, sys
 import pychat_util
 import threading
 import time
+from xmlrpclib import ServerProxy
 
+
+import logging
+FORMAT = '%(asctime)-15s %(levelname)s %(message)s'
+logging.basicConfig(level=logging.DEBUG, format=FORMAT)
+LOG = logging.getLogger()
 
 #-----------------------------------------------------------------
 
@@ -42,10 +48,46 @@ UserName=''
 Sname=''
 Pname=''
 Inputs_Done=False
+proxy=None
 
 def create_window():
 
     window = tk.Toplevel()
+
+
+def refresh_query():
+    time.sleep(1)
+    msg='refresh:'
+    try:
+        grid = proxy.Get_Grid("custom_room")
+        print("Grid:\n")
+        print(grid[0][0])
+        print(grid[0][1])
+        print(grid[0][2])
+
+        print("Main:\n")
+        print(Reception_Handler.MainGrid[0][0])
+        print(Reception_Handler.MainGrid[0][1])
+        print(Reception_Handler.MainGrid[0][2])
+
+        for i in range(9):
+            for j in range(9):
+                if(Reception_Handler.MainGrid[i][j] is not grid[i][j]):
+                    print("Old = ", Reception_Handler.MainGrid[i][j])
+                    print("New = ",grid[i][j])
+                    x= 9*(i)
+                    y= x+j
+                    Reception_Handler.theSquares[y].change(grid[i][j])
+                    print('i  and j = ',i,j)
+                    print('location = %d'%y)
+                    print('number = ',grid[i][j])
+        Reception_Handler.MainGrid = grid
+    except:
+        pass
+
+
+    refresh_query()
+
 
 '''
 The openServer functions executes, when the player name is accepted. It opens a new python window where the player need to specify
@@ -73,6 +115,46 @@ def openServer(player):
         Inputs_Done=True
         win.destroy()
         won.destroy()
+
+        # TODO
+        # Server Discovery window
+        # Room Selections window (Create and Join)
+        # Start Game
+
+
+        global proxy
+        # RPC Server's socket address
+        server = ('127.0.0.1', 19191)
+
+        try:
+            proxy = ServerProxy("http://%s:%d" % server)
+        except KeyboardInterrupt:
+            LOG.warn('Ctrl+C issued, terminating')
+            exit(0)
+        except Exception as e:
+            LOG.error('Communication error %s ' % str(e))
+            exit(1)
+
+        LOG.info('Connected to File XMLRPC server!')
+        methods = filter(lambda x: 'system.' not in x, proxy.system.listMethods())
+        LOG.debug('Remote methods are: [%s] ' % (', '.join(methods)))
+
+        check, data = proxy.Welcome_and_getList("Mahir", 23212)
+        print(check, data)
+        grid = proxy.join_room("Mahir", "custom_room")
+        # print(grid)
+        handle = Reception_Handler.Handler()  # Client Handler Handle class object
+
+        # Threads to operate client's reception and game GUI
+        game = threading.Thread(target=handle.Initial_Reception, args=(grid,UserName,proxy))
+        refreshloop = threading.Thread(target=refresh_query)
+        game.start()
+        refreshloop.start()
+        game.join()
+        refreshloop.join()
+
+        Reception_Handler.inroom=True
+
 
     '''
     The makeWindow() function creates the GUI interface using Tkinter widgets. All widgets are activated or displayed by calling the pack function,
@@ -203,11 +285,11 @@ won.mainloop()
 
 ##################################################################################
 
-READ_BUFFER = 4096
-score=0
-server_connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-server_connection.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-server_connection.connect(('127.0.0.1', pychat_util.PORT))
+# READ_BUFFER = 4096
+# score=0
+# server_connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+# server_connection.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+# server_connection.connect(('127.0.0.1', pychat_util.PORT))
 
 
 
@@ -216,61 +298,63 @@ A recursive method running under reception thread
 to recive continous updated grid from server.
 """
 
-def refresh_query():
-    time.sleep(1)
-    msg='refresh:'
-    try:
-        server_connection.sendall(msg.encode())
-        msg = server_connection.recv(READ_BUFFER)
-        self_grid = msg.replace("grid: ", "")
-        grid = []
-        li = []
-        string_grid = self_grid.split(',')
-        for element in string_grid:
-
-            # print(element.strip())
-            element = element.strip()
-            if (element.strip() == 'None'):
-                li.append(None)
-            elif (len(element.strip()) > 0):
-                li.append(int(element))
-                # li.append(1)
-
-            if (len(li) == 9):
-                grid.append(list(li))
-                li = []
-
-        for i in range(9):
-            for j in range(9):
-                if(Reception_Handler.MainGrid[i][j] is not grid[i][j]):
-                    print("Old = ", Reception_Handler.MainGrid[i][j])
-                    print("New = ",grid[i][j])
-                    x= 9*(i)
-                    y= x+j
-                    Reception_Handler.theSquares[y].change(grid[i][j])
-                    print('i  and j = ',i,j)
-                    print('location = %d'%y)
-                    print('number = ',grid[i][j])
-        Reception_Handler.MainGrid = grid
-    except:
-        print('')
 
 
-    refresh_query()
+# def refresh_query():
+#     time.sleep(1)
+#     msg='refresh:'
+#     try:
+#         server_connection.sendall(msg.encode())
+#         msg = server_connection.recv(READ_BUFFER)
+#         self_grid = msg.replace("grid: ", "")
+#         grid = []
+#         li = []
+#         string_grid = self_grid.split(',')
+#         for element in string_grid:
+#
+#             # print(element.strip())
+#             element = element.strip()
+#             if (element.strip() == 'None'):
+#                 li.append(None)
+#             elif (len(element.strip()) > 0):
+#                 li.append(int(element))
+#                 # li.append(1)
+#
+#             if (len(li) == 9):
+#                 grid.append(list(li))
+#                 li = []
+#
+#         for i in range(9):
+#             for j in range(9):
+#                 if(Reception_Handler.MainGrid[i][j] is not grid[i][j]):
+#                     print("Old = ", Reception_Handler.MainGrid[i][j])
+#                     print("New = ",grid[i][j])
+#                     x= 9*(i)
+#                     y= x+j
+#                     Reception_Handler.theSquares[y].change(grid[i][j])
+#                     print('i  and j = ',i,j)
+#                     print('location = %d'%y)
+#                     print('number = ',grid[i][j])
+#         Reception_Handler.MainGrid = grid
+#     except:
+#         print('')
+#
+#
+#     refresh_query()
 
 
 #------------------------------------------------------------------------------------------------------
 
 
-def prompt():
-    print('>', end=" ")
-
-
-
-print ("Connected to server\n")
-msg_prefix = ''                                 # msg prefix is appended as signature term for server
-socket_list = [sys.stdin, server_connection]
-name=UserName
+# def prompt():
+#     print('>', end=" ")
+#
+#
+#
+# print ("Connected to server\n")
+# msg_prefix = ''                                 # msg prefix is appended as signature term for server
+# socket_list = [sys.stdin, server_connection]
+# name=UserName
 
 
 
@@ -280,64 +364,64 @@ name=UserName
 Initial connection and protocol resolution from client side
 is handled in this loop
 """
-while True:
-    read_sockets, write_sockets, error_sockets = select.select(socket_list, [], [])
-    for s in read_sockets:
-        if(Inputs_Done):
-            if s is server_connection: # incoming message
-                msg = s.recv(READ_BUFFER)
-                if not msg:
-                    print ("Server down!")
-                    sys.exit(2)
-                else:
-                    if msg == pychat_util.QUIT_STRING.encode():
-                        sys.stdout.write('Bye\n')
-                        sys.exit(2)
-                    else:
-                        sys.stdout.write(msg.decode())
-                        if 'Listing current rooms' in msg.decode():
-                            msg_prefix = 'name: '+name  # Send user name to server
-                            server_connection.sendall(msg_prefix.encode())
-                            continue
-
-                        elif 'Oops' in msg.decode():
-                            msg_prefix = 'name: ' + name  # Send user name to server
-                            server_connection.sendall(msg_prefix.encode())
-                            continue
-
-                        elif 'welcomes' in msg.decode() and Reception_Handler.inroom is False:
-                            #print('WElcome...')
-                            grid=msg.replace("welcomes: ", "")      # replace signature term with empty and
-                            handle = Reception_Handler.Handler()       # Client Handler Handle class object
-
-                            # Threads to operate client's reception and game GUI
-                            game = threading.Thread(target=handle.Initial_Reception, args=(grid,name,s))
-                            refreshloop = threading.Thread(target=refresh_query)
-                            game.start()
-                            refreshloop.start()
-                            game.join()
-                            refreshloop.join()
-
-                            Reception_Handler.inroom=True
-
-                        elif 'selection' in msg.decode():
-
-                            msg_prefix = 'session: '  # identifier for new session
-
-                        elif 'grid: ' in msg:
-
-                            grid = msg.replace("grid: ", "") # identifier for grid
-
-                        else:
-                            msg_prefix = ''
-
-                        if(Reception_Handler.inroom is False):
-                            prompt()
-
-            else:
-                #print(Client_Handler.inroom)
-                if(Reception_Handler.inroom is False):
-
-                    #print('Waiting for client input...')
-                    msg = msg_prefix + sys.stdin.readline()
-                    server_connection.sendall(msg.encode())
+# while True:
+#     read_sockets, write_sockets, error_sockets = select.select(socket_list, [], [])
+#     for s in read_sockets:
+#         if(Inputs_Done):
+#             if s is server_connection: # incoming message
+#                 msg = s.recv(READ_BUFFER)
+#                 if not msg:
+#                     print ("Server down!")
+#                     sys.exit(2)
+#                 else:
+#                     if msg == pychat_util.QUIT_STRING.encode():
+#                         sys.stdout.write('Bye\n')
+#                         sys.exit(2)
+#                     else:
+#                         sys.stdout.write(msg.decode())
+#                         if 'Listing current rooms' in msg.decode():
+#                             msg_prefix = 'name: '+name  # Send user name to server
+#                             server_connection.sendall(msg_prefix.encode())
+#                             continue
+#
+#                         elif 'Oops' in msg.decode():
+#                             msg_prefix = 'name: ' + name  # Send user name to server
+#                             server_connection.sendall(msg_prefix.encode())
+#                             continue
+#
+#                         elif 'welcomes' in msg.decode() and Reception_Handler.inroom is False:
+#                             #print('WElcome...')
+#                             grid=msg.replace("welcomes: ", "")      # replace signature term with empty and
+#                             handle = Reception_Handler.Handler()       # Client Handler Handle class object
+#
+#                             # Threads to operate client's reception and game GUI
+#                             game = threading.Thread(target=handle.Initial_Reception, args=(grid,name,s))
+#                             refreshloop = threading.Thread(target=refresh_query)
+#                             game.start()
+#                             refreshloop.start()
+#                             game.join()
+#                             refreshloop.join()
+#
+#                             Reception_Handler.inroom=True
+#
+#                         elif 'selection' in msg.decode():
+#
+#                             msg_prefix = 'session: '  # identifier for new session
+#
+#                         elif 'grid: ' in msg:
+#
+#                             grid = msg.replace("grid: ", "") # identifier for grid
+#
+#                         else:
+#                             msg_prefix = ''
+#
+#                         if(Reception_Handler.inroom is False):
+#                             prompt()
+#
+#             else:
+#                 #print(Client_Handler.inroom)
+#                 if(Reception_Handler.inroom is False):
+#
+#                     #print('Waiting for client input...')
+#                     msg = msg_prefix + sys.stdin.readline()
+#                     server_connection.sendall(msg.encode())

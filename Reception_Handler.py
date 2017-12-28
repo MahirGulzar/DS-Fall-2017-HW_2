@@ -50,26 +50,26 @@ class Handler:
         return current
 
     """Modify Grid of the Client Side if user changes the value of a cell.."""
-    def Initial_Reception(self,self_grid,name,s):
+    def Initial_Reception(self,grid,name,s):
 
         print(".....")
-        grid = []
-        li = []
-        string_grid = self_grid.split(',')
-        for element in string_grid:
-
-            #print(element.strip())
-            element = element.strip()
-            if (element.strip() == 'None'):
-                li.append(None)
-            elif (len(element.strip()) > 0):
-                li.append(int(element))
-                # li.append(1)
-
-            if (len(li) == 9):
-                grid.append(list(li))
-                li = []
-
+        # grid = []
+        # li = []
+        # string_grid = self_grid.split(',')
+        # for element in string_grid:
+        #
+        #     #print(element.strip())
+        #     element = element.strip()
+        #     if (element.strip() == 'None'):
+        #         li.append(None)
+        #     elif (len(element.strip()) > 0):
+        #         li.append(int(element))
+        #         # li.append(1)
+        #
+        #     if (len(li) == 9):
+        #         grid.append(list(li))
+        #         li = []
+        #
         global MainGrid
         MainGrid = grid
 
@@ -80,7 +80,7 @@ class Handler:
     def Send_Key_Update(self,x,y,number,s):
 
         coordinate='u:'+str(x)+','+str(y)+','+str(number)
-        s.sendall(coordinate)
+        s.update_index_value(coordinate,"custom_room")
 
 
 
