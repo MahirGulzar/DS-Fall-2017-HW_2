@@ -45,23 +45,15 @@ def main(args):
     methods = filter(lambda x: 'system.' not in x, proxy.system.listMethods())
     LOG.debug('Remote methods are: [%s] ' % (', '.join(methods)))
 
-    # Add server address and port when calling handle functions
-    # if args.upload:
-    #     LOG.debug("Upload chosen")
-    # elif args.download:
-    #     LOG.debug("Download chosen")
-    #     handle_download(args.download)
-    # else:
-    #     LOG.debug("Listing chosen")
+
+    check, data = proxy.Welcome_and_getList("Mahir",23212)
+    print(check,data)
+    grid = proxy.create_room("Mahir","custom_room")
+    print(grid)
 
 
-def handle_download(filename):
-    LOG.info("Starting download for file: %s." % filename)
-    # Use RPC proxy and initialize download
-    data = proxy.handle_download(filename)
-    LOG.info('Process Download Started %s'%str(data))
 
-    return
+
 
 if __name__== "__main__":
     parser = ArgumentParser(description="Client for uploading/listing files.")

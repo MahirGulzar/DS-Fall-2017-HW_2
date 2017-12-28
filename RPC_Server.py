@@ -6,6 +6,8 @@ import pychat_util
 from argparse import ArgumentParser
 from SimpleXMLRPCServer import SimpleXMLRPCServer
 from SimpleXMLRPCServer import SimpleXMLRPCRequestHandler
+from SocketServer import ThreadingMixIn
+
 from time import time
 import sys
 from os.path import sep, abspath
@@ -16,11 +18,13 @@ FORMAT = '%(asctime)-15s %(levelname)s %(threadName)s %(message)s'
 logging.basicConfig(level=logging.DEBUG, format=FORMAT)
 LOG = logging.getLogger()
 
+class MyXMLRPCServer(ThreadingMixIn, SimpleXMLRPCServer):
+    pass
 
 
 
 # Restrict to a particular path.
-class FileServerRequestHandler(SimpleXMLRPCRequestHandler):
+class RequestHandler(SimpleXMLRPCRequestHandler):
     rpc_paths = ('/RPC2',)
 
 class Server:
@@ -29,7 +33,7 @@ class Server:
         self.gameserver = pychat_util.Hall()
         self.server_sock = (args.laddr, args.port)
         # Create XML_server
-        self.server = SimpleXMLRPCServer(self.server_sock)
+        self.server = MyXMLRPCServer(self.server_sock,requestHandler=RequestHandler,allow_none=True)
         self.start_main()
 
     def start_main(self):

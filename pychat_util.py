@@ -71,33 +71,79 @@ class Hall:
 
     def __init__(self):
         self.rooms = {} # {room_name: Room}
-        self.room_player_map = {} # {playerName: roomName}
+        self.room_player_map = {} # {playerID: roomName}
 
 
 
     """
     Initial Reception: Send room list to client side..
     """
-    def welcome_new(self, new_player):
-        #new_player.socket.sendall(b'Welcome to pychat.\nPlease tell us your name:\n')
-        self.list_rooms(new_player)
+    def Welcome_and_getList(self, new_player, player_id):
+        print(new_player)
 
+        return self.list_rooms()
+
+
+    def create_room(self,new_player, room_name):
+        new_room = Room(room_name)
+        self.rooms[room_name] = new_room
+        self.room_player_map[new_player]=room_name
+        self.rooms[room_name].players.append(new_player)
+        return self.rooms[room_name].Update_Grid()
+
+    def join_room(self,new_player, room_name):
+
+        self.room_player_map[new_player] = room_name
+        self.rooms[room_name].players.append(new_player)
+        return self.rooms[room_name].Update_Grid()
+
+
+    def Get_Grid(self,room_name):
+        return self.rooms[room_name].Update_Grid()
+
+    # def welcome_new(self, new_player):
+    #     #new_player.socket.sendall(b'Welcome to pychat.\nPlease tell us your name:\n')
+    #     self.list_rooms(new_player)
+
+
+
+    # """
+    # List all present rooms.
+    # """
+    # def list_rooms(self, player):
+    #
+    #     if len(self.rooms) == 0:
+    #         msg = 'Oops, no active rooms currently. Create your own!\n' \
+    #             + 'Write room name..\n'
+    #         return (False,None)
+    #         # player.socket.sendall(msg.encode())
+    #     else:
+    #         msg = 'Listing current rooms choose a room as number ...\n'
+    #         for room in self.rooms:
+    #             msg += room + ": " + str(len(self.rooms[room].players)) + " player(s)\n"
+    #         return (True,self.rooms)
+    #         # player.socket.sendall(msg.encode())
 
 
     """
-    List all present rooms.
-    """
-    def list_rooms(self, player):
-        
+        List all present rooms.
+        """
+
+    def list_rooms(self):
+
         if len(self.rooms) == 0:
             msg = 'Oops, no active rooms currently. Create your own!\n' \
-                + 'Write room name..\n'
-            player.socket.sendall(msg.encode())
+                  + 'Write room name..\n'
+            return False, None
+            # player.socket.sendall(msg.encode())
         else:
             msg = 'Listing current rooms choose a room as number ...\n'
             for room in self.rooms:
                 msg += room + ": " + str(len(self.rooms[room].players)) + " player(s)\n"
-            player.socket.sendall(msg.encode())
+            return True, self.rooms
+            # player.socket.sendall(msg.encode())
+
+
 
 
 
@@ -142,7 +188,7 @@ class Hall:
 
         elif "<list>" in msg:
             self.list_rooms(player)
-        
+
         elif "<quit>" in msg:
             player.socket.sendall(QUIT_STRING.encode())
             self.remove_player(player)
@@ -202,16 +248,25 @@ class Room:
     """
     Welcome new player to this and return the corresponding game to the new player.
     """
-    def welcome_new(self, from_player):
-        i=0
-        send_grid=''
-        for row in self.grid:
-            for col in row:
-                send_grid=send_grid+','+str(col)
-                i+=1
-        msg = "welcomes: " + send_grid
-        for player in self.players:
-            player.socket.sendall(msg.encode())
+    # def welcome_new(self, from_player):
+    #     i=0
+    #     send_grid=''
+    #     for row in self.grid:
+    #         for col in row:
+    #             send_grid=send_grid+','+str(col)
+    #             i+=1
+    #     msg = "welcomes: " + send_grid
+    #     for player in self.players:
+    #         player.socket.sendall(msg.encode())
+    def Update_Grid(self):
+        # i=0
+        # send_grid=''
+        # for row in self.grid:
+        #     for col in row:
+        #         send_grid=send_grid+','+str(col)
+        #         i+=1
+        # msg = "welcomes: " + send_grid
+        return self.grid
 
 
 

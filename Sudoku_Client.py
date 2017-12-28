@@ -273,6 +273,9 @@ socket_list = [sys.stdin, server_connection]
 name=UserName
 
 
+
+
+
 """
 Initial connection and protocol resolution from client side
 is handled in this loop
