@@ -5,6 +5,9 @@ import pygame               # Must install pygame for this module to work (see M
 sys.path.append(os.path.join("objects"))
 sys.path.append(os.path.join("Server Side"))
 sys.path.append(os.path.join("Client Side"))
+
+
+from socket import socket, AF_INET, SOCK_DGRAM
 from GameResources import *
 import Reception_Handler
 import select, socket, sys
@@ -12,6 +15,7 @@ import pychat_util
 import threading
 import time
 from xmlrpclib import ServerProxy
+
 
 
 import logging
@@ -49,6 +53,34 @@ Sname=''
 Pname=''
 Inputs_Done=False
 proxy=None
+
+
+# Discovered Server-Ip
+MAGIC = "fna349fn" #to make sure we don't confuse or get confused by other programs
+server_ip=None
+server_port=None
+
+
+def Try_Discovering_Server():
+    global MAGIC
+    global server_ip
+    global server_port
+
+    s = socket.socket(AF_INET, SOCK_DGRAM)  # create UDP socket
+    s.bind(('', 19191))
+
+    while 1:
+        data, addr = s.recvfrom(1024)  # wait for a packet
+        if data.startswith(MAGIC):
+
+            print("got service announcement from %s"%data[len(MAGIC):])
+            addr_port = str(data[len(MAGIC):]).split(' ');
+            print(addr_port[0])
+            print(addr_port[1])
+            server_ip=addr_port[0]
+            server_port=(int)(str(addr_port[1]))
+            break
+
 
 def create_window():
 
@@ -112,6 +144,9 @@ def openServer(player):
     def save1(sname, pname):
         global Inputs_Done
         global won
+        global server_port
+        global server_ip
+
         Inputs_Done=True
         win.destroy()
         won.destroy()
@@ -121,10 +156,13 @@ def openServer(player):
         # Room Selections window (Create and Join)
         # Start Game
 
-
+        if(server_port==None):
+            print(server_port)
+            print('Server not Found yet trying running server first.. Quiting Application now..')
+            sys.exit(2)
         global proxy
         # RPC Server's socket address
-        server = ('127.0.0.1', 19191)
+        server = (server_ip, server_port)
 
         try:
             proxy = ServerProxy("http://%s:%d" % server)
@@ -141,7 +179,7 @@ def openServer(player):
 
         check, data = proxy.Welcome_and_getList("Mahir", 23212)
         print(check, data)
-        grid = proxy.join_room("Mahir", "custom_room")
+        grid = proxy.create_room("Mahir", "custom_room")
         # print(grid)
         handle = Reception_Handler.Handler()  # Client Handler Handle class object
 
@@ -276,10 +314,14 @@ def makeWindow():
 
 
 
-
+# Threads for server discovery over the network
+discover = threading.Thread(target=Try_Discovering_Server)
+discover.start()
 
 won = makeWindow()
 won.mainloop()
+
+
 
 
 

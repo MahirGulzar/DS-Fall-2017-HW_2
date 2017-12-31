@@ -3,6 +3,11 @@ import threading
 import logging
 import pychat_util
 
+
+from time import sleep
+from socket import socket, AF_INET, SOCK_DGRAM, SOL_SOCKET, SO_BROADCAST, gethostbyname, gethostname
+
+
 from argparse import ArgumentParser
 from SimpleXMLRPCServer import SimpleXMLRPCServer
 from SimpleXMLRPCServer import SimpleXMLRPCRequestHandler
@@ -18,9 +23,30 @@ FORMAT = '%(asctime)-15s %(levelname)s %(threadName)s %(message)s'
 logging.basicConfig(level=logging.DEBUG, format=FORMAT)
 LOG = logging.getLogger()
 
+
+'''
+Multi-threading RPC Server to handle concurrent Client requests
+'''
 class MyXMLRPCServer(ThreadingMixIn, SimpleXMLRPCServer):
     pass
 
+
+'''
+Server Announcement on Local Network
+'''
+MAGIC = "fna349fn" #to make sure we don't confuse or get confused by other programs
+
+def Server_Announcement(args):
+    s = socket(AF_INET, SOCK_DGRAM)  # create UDP socket
+    s.bind(('', 0))
+    s.setsockopt(SOL_SOCKET, SO_BROADCAST, 1)  # this is a broadcast socketrocket league weapon
+    my_ip = args.laddr # get our IP. Be careful if you have multiple network interfaces or IPs
+
+    while 1:
+        data = MAGIC + my_ip+" "+str(args.port)
+        s.sendto(data, ('<broadcast>', args.port))
+        print "sent service announcement"
+        sleep(3)
 
 
 # Restrict to a particular path.
@@ -56,11 +82,29 @@ class Server:
 
         # Register server-side functions into RPC middleware
 
+'''
+To Run RPC Server in Seperate Thread
+'''
+def Run_RPC(args):
+    s = Server(args)
 
-# NB! READ ARGPARSER DESCRIPTION IN CLIENT, if confused by argparsers
+
 if __name__=="__main__":
     parser = ArgumentParser()
     parser.add_argument('-l', '--laddr', help="Listen address. Default localhost.",  default='127.0.0.1')
     parser.add_argument('-p', '--port', help="Listen on port.", default=19191, type=int)
     args = parser.parse_args()
-    s = Server(args)
+
+    # Threads for server announcement over the network and
+    # RPC Server Serve forever
+    announce = threading.Thread(target=Server_Announcement, args=(args,))
+    RPC_Feature = threading.Thread(target=Run_RPC,args=(args,))
+    announce.start()
+    RPC_Feature.start()
+    announce.join()
+    RPC_Feature.join()
+
+
+
+
+
