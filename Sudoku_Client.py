@@ -23,7 +23,16 @@ FORMAT = '%(asctime)-15s %(levelname)s %(message)s'
 logging.basicConfig(level=logging.DEBUG, format=FORMAT)
 LOG = logging.getLogger()
 
-#-----------------------------------------------------------------
+
+
+from Tkinter import *
+import tkMessageBox as messagebox
+import Tkinter as tk
+import sys
+#import Sudoku_Client
+
+
+###############################################################################
 
 '''
 Sudoku Client script handles the initial server connection 
@@ -34,13 +43,6 @@ and a game this script runs two threads:
 2- Game Logic and GUI of Client Handler
 '''
 
-###############################################################################
-
-from Tkinter import *
-import tkMessageBox as messagebox
-import Tkinter as tk
-import sys
-#import Sudoku_Client
 
 '''
 This is the user interface code for Sudoku GUI. It asks for a player name first and saves the player name
@@ -135,8 +137,6 @@ def openServer(player):
     UserName = player.get()
     UserName = player.get()
     #print(UserName)
-
-
 
     '''
     The create_window() function creates a window.
@@ -321,17 +321,5 @@ discover.start()
 
 won = makeWindow()
 won.mainloop()
-
-
-
-
-
-##################################################################################
-
-# READ_BUFFER = 4096
-# score=0
-# server_connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-# server_connection.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-# server_connection.connect(('127.0.0.1', pychat_util.PORT))
 
 
