@@ -205,7 +205,20 @@ def openServer(player):
         win.title('Sudoku')
         Label(win, text='Please provide the following details').pack(pady=30)
         win.geometry('500x400')
+        w = 800  # width for the Tk root
+        h = 800  # height for the Tk root
 
+        # get screen width and height
+        ws = win.winfo_screenwidth()  # width of the screen
+        hs = win.winfo_screenheight()  # height of the screen
+
+        # calculate x and y coordinates for the Tk root window
+        x = (ws / 3) - (w / 2)
+        y = (hs / 2) - (h / 3)
+
+        # set the dimensions of the screen
+        # and where it is placed
+        win.geometry('%dx%d+%d+%d' % (w, h, x, y))
         Sname = StringVar()
         Pname = StringVar()
 
