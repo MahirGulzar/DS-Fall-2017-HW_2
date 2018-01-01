@@ -15,7 +15,7 @@ import pychat_util
 import threading
 import time
 from xmlrpclib import ServerProxy
-
+import serverdisc
 
 
 import logging
@@ -150,11 +150,10 @@ def openServer(player):
         global won
         global server_port
         global server_ip
-
         Inputs_Done=True
         win.destroy()
         won.destroy()
-
+        serverdisc.func()
         # TODO
         # Server Discovery window
         # Room Selections window (Create and Join)
