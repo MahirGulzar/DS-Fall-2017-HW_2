@@ -4,6 +4,9 @@ import logging
 import pychat_util
 
 
+'''
+Importing sockets for server announcement over the network..
+'''
 from time import sleep
 from socket import socket, AF_INET, SOCK_DGRAM, SOL_SOCKET, SO_BROADCAST, gethostbyname, gethostname
 
@@ -24,11 +27,18 @@ logging.basicConfig(level=logging.DEBUG, format=FORMAT)
 LOG = logging.getLogger()
 
 
+
+
+#--------------------------------------------------------------------------------------------------------
+
 '''
-Multi-threading RPC Server to handle concurrent Client requests
+The RPC Server handles the main server side protocol of the game
+whenever a client communicates with server, the server creates an object
+of Hall and mark all the methods of Hall as RPC.. client can use these methods 
+for further communication..
 '''
-class MyXMLRPCServer(ThreadingMixIn, SimpleXMLRPCServer):
-    pass
+
+#=============================================================================================
 
 
 '''
@@ -39,19 +49,33 @@ MAGIC = "fna349fn" #to make sure we don't confuse or get confused by other progr
 def Server_Announcement(args):
     s = socket(AF_INET, SOCK_DGRAM)  # create UDP socket
     s.bind(('', 0))
-    s.setsockopt(SOL_SOCKET, SO_BROADCAST, 1)  # this is a broadcast socketrocket league weapon
-    my_ip = args.laddr # get our IP. Be careful if you have multiple network interfaces or IPs
+    s.setsockopt(SOL_SOCKET, SO_BROADCAST, 1) # for broadcast
+    my_ip = args.laddr
 
     while 1:
         data = MAGIC + my_ip+" "+str(args.port)
         s.sendto(data, ('<broadcast>', args.port))
-        print "sent service announcement"
+        #LOG.info("Announcing Server over the network...")
         sleep(3)
 
 
-# Restrict to a particular path.
+
+#=============================================================================================
+
+'''
+Multi-threading RPC Server to handle concurrent Client requests
+'''
+
+class MyXMLRPCServer(ThreadingMixIn, SimpleXMLRPCServer):
+    pass
+
+'''
+Restric RPC to a particular path
+'''
 class RequestHandler(SimpleXMLRPCRequestHandler):
     rpc_paths = ('/RPC2',)
+
+
 
 class Server:
     def __init__(self, args):
@@ -63,11 +87,8 @@ class Server:
         self.start_main()
 
     def start_main(self):
-        #start the RPC server
-
 
         self.server.register_introspection_functions()
-
         self.server.register_instance(self.gameserver)
 
         try:
@@ -77,16 +98,18 @@ class Server:
         finally:
             self.server.shutdown()  # Stop the serve-forever loop
             self.server.server_close()  # Close the sockets
-        print 'Terminating ...'
+        LOG.info('Terminating ...')
         # Initilize RPC service on specific port
-
         # Register server-side functions into RPC middleware
+
 
 '''
 To Run RPC Server in Seperate Thread
 '''
 def Run_RPC(args):
     s = Server(args)
+
+#=============================================================================================
 
 
 if __name__=="__main__":
