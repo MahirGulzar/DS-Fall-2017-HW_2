@@ -56,7 +56,7 @@ def Server_Announcement(args):
         data = MAGIC + my_ip+" "+str(args.port)
         s.sendto(data, ('<broadcast>', args.port))
         #LOG.info("Announcing Server over the network...")
-        sleep(3)
+        sleep(1)
 
 
 
@@ -115,7 +115,7 @@ def Run_RPC(args):
 if __name__=="__main__":
     parser = ArgumentParser()
     parser.add_argument('-l', '--laddr', help="Listen address. Default localhost.",  default='127.0.0.1')
-    parser.add_argument('-p', '--port', help="Listen on port.", default=19191, type=int)
+    parser.add_argument('-p', '--port', help="Listen on port.", default=12346, type=int)
     args = parser.parse_args()
 
     # Threads for server announcement over the network and
