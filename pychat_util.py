@@ -58,6 +58,7 @@ class Hall:
 
     def __init__(self):
         self.rooms = {} # {room_name: Room}
+        self.room_names=[]
         self.room_player_map = {} # {playerID: roomName}
 
     """
@@ -71,13 +72,14 @@ class Hall:
         if len(self.rooms) == 0:
            return False, None
         else:
-            return True, self.rooms
+            return True, self.room_names
 
     """
         Create new room with player name for CLient and return the Sudoku Grid
     """
     def create_room(self,new_player, room_name):
         new_room = Room(room_name)
+        self.room_names.append(room_name)
         self.rooms[room_name] = new_room
         self.room_player_map[new_player]=room_name
         self.rooms[room_name].players.append(new_player)

@@ -2,6 +2,7 @@ import SudokuSquare             # Must install pygame for this module to work (s
 import SudokuGrid               # Must install pygame for this module to work (see Manual)
 from GameResources import *     # Must install pygame for this module to work (see Manual)
 import sys
+import roomsgui
 
 
 '''
@@ -80,7 +81,7 @@ class Handler:
     def Send_Key_Update(self,x,y,number,s):
 
         coordinate='u:'+str(x)+','+str(y)+','+str(number)
-        s.update_index_value(coordinate,"custom_room")
+        s.update_index_value(coordinate,roomsgui.selected_room)
 
 
 
