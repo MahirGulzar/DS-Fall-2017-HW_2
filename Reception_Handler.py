@@ -28,6 +28,8 @@ board, boardRect = load_image("SudokuBg.png")
 boardRect = boardRect.move(10, 80)
 
 
+
+
 class Handler:
     """A class to handle server send and recieve data"""
 
@@ -52,25 +54,6 @@ class Handler:
 
     """Modify Grid of the Client Side if user changes the value of a cell.."""
     def Initial_Reception(self,grid,name,s):
-
-        print(".....")
-        # grid = []
-        # li = []
-        # string_grid = self_grid.split(',')
-        # for element in string_grid:
-        #
-        #     #print(element.strip())
-        #     element = element.strip()
-        #     if (element.strip() == 'None'):
-        #         li.append(None)
-        #     elif (len(element.strip()) > 0):
-        #         li.append(int(element))
-        #         # li.append(1)
-        #
-        #     if (len(li) == 9):
-        #         grid.append(list(li))
-        #         li = []
-        #
         global MainGrid
         MainGrid = grid
 

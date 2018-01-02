@@ -30,7 +30,6 @@ from Tkinter import *
 import tkMessageBox as messagebox
 import Tkinter as tk
 import sys
-#import Sudoku_Client
 
 
 ###############################################################################
@@ -44,24 +43,21 @@ and a game this script runs two threads:
 2- Game Logic and GUI of Client Handler
 '''
 
+###############################################################################
 
-'''
-This is the user interface code for Sudoku GUI. It asks for a player name first and saves the player name
-in a txt file. If a player has already saved his/her name, the player can select his/her name from a listbox appearing
-in the main window.
-'''
 
 UserName=''
-Sname=''
-Pname=''
 Inputs_Done=False
-proxy=None
+proxy=None      # SimpleXMLRPC Proxy variable
 
 
 # Discovered Server-Ip
 MAGIC = "fna349fn" #to make sure we don't confuse or get confused by other programs
 server_ip=None
 server_port=None
+
+
+###############################################################################
 
 
 def Try_Discovering_Server():
@@ -80,6 +76,7 @@ def Try_Discovering_Server():
             addr_port = str(data[len(MAGIC):]).split(' ');
             server_ip=addr_port[0]
             server_port=(int)(str(addr_port[1]))
+            s.close()
             break
 
 
@@ -96,7 +93,6 @@ to recive continous updated grid from server.
 
 def refresh_query():
     time.sleep(1)
-    msg='refresh:'
     try:
         grid = proxy.Get_Grid(roomsgui.selected_room)
         for i in range(9):
@@ -113,127 +109,19 @@ def refresh_query():
     refresh_query()
 
 
+#=================================================================================================
+
+
+
 '''
-The openServer functions executes, when the player name is accepted. It opens a new python window where the player need to specify
-the server address and port number.
+The openServer calls server discovery window from serverdisc module
 '''
-def openServer(won,player=None):
+def openServer(won,username=None):
     global UserName
-    serverdisc.func(server_ip,server_port,UserName,won)
-    # global UserName
-    # UserName = player.get()
-    # UserName = player.get()
-    # #print(UserName)
-    #
-    # '''
-    # The create_window() function creates a window.
-    # '''
-    #
-    # def create_window():
-    #     window = tk.Toplevel()
-    #
-    # def save1(sname, pname):
-    #     global Inputs_Done
-    #     global won
-    #     global server_port
-    #     global server_ip
-    #     Inputs_Done=True
-    #     win.destroy()
-    #     won.destroy()
-    #     serverdisc.func()
-    #     # TODO
-    #     # Server Discovery window
-    #     # Room Selections window (Create and Join)
-    #     # Start Game
-    #
-    #     if(server_port==None):
-    #         LOG.info('Server not Found yet trying running server first.. Quiting Application now..')
-    #         sys.exit(2)
-    #     global proxy
-    #     # RPC Server's socket address
-    #     server = (server_ip, server_port)
-    #
-    #     try:
-    #         proxy = ServerProxy("http://%s:%d" % server)
-    #     except KeyboardInterrupt:
-    #         LOG.warn('Ctrl+C issued, terminating')
-    #         exit(0)
-    #     except Exception as e:
-    #         LOG.error('Communication error %s ' % str(e))
-    #         exit(1)
-    #
-    #     LOG.info('Connected to File XMLRPC server!')
-    #     methods = filter(lambda x: 'system.' not in x, proxy.system.listMethods())
-    #     LOG.debug('Remote methods are: [%s] ' % (', '.join(methods)))
-    #
-    #     check, data = proxy.Welcome_and_getList("Mahir", 23212)
-    #     grid = proxy.join_room("ali", "custom_room")
-    #     handle = Reception_Handler.Handler()  # Client Handler Handle class object
-    #
-    #     # Threads to operate client's reception and game GUI
-    #     game = threading.Thread(target=handle.Initial_Reception, args=(grid,UserName,proxy))
-    #     refreshloop = threading.Thread(target=refresh_query)
-    #     game.start()
-    #     refreshloop.start()
-    #     game.join()
-    #     refreshloop.join()
-    #
-    #     Reception_Handler.inroom=True
-    #
-    #
-    # '''
-    # The makeWindow() function creates the GUI interface using Tkinter widgets. All widgets are activated or displayed by calling the pack function,
-    # which is a default function for every widget is called.
-    # '''
-    #
-    # def makeWindow():
-    #     global Sname, Pname
-    #     win = Tk()
-    #     win.title('Sudoku')
-    #     Label(win, text='Please provide the following details').pack(pady=30)
-    #     win.geometry('500x400')
-    #
-    #     Sname = StringVar()
-    #     Pname = StringVar()
-    #
-    #     frame1 = Frame(win)
-    #     name = Entry(frame1, textvariable=Sname)
-    #
-    #     label = Label(win, text="Enter Server Address")
-    #     label.pack()
-    #     name.grid(row=0, column=1, sticky=W)
-    #
-    #     frame1.pack()
-    #     label2 = Label(win, text="Enter port")
-    #     name1 = Entry(win, textvariable=Pname)
-    #     label2.pack()
-    #     name1.pack()
-    #
-    #     # Define a frame
-    #     frame2 = Frame(win, width=200, height=300)
-    #
-    #     # Define two buttons and each saved inside the framee
-    #     b1 = Button(frame2, text=" Enter ", command=lambda: save1(Sname, Pname))
-    #
-    #     # b1 = Button(frame2, text=" Enter ", command=lambda:sav)
-    #
-    #     b4 = Button(frame2, text=" Cancel ", command=lambda: exit(sys))
-    #
-    #     # Call the pack function to set the visibility of the buttons true
-    #     b1.pack(side=LEFT, padx=10, pady=10)
-    #     b4.pack(side=RIGHT, padx=10, pady=10)
-    #
-    #     frame2.pack()
-    #     return win
-    #
-    # win = makeWindow()
-    # # win.mainloop()
+    UserName=username
+    serverdisc.ServerDiscoveryWindow(server_ip,server_port,UserName,won)
 
 
-def openclient(player):
-    player.get()
-    name = player.get()
-    execfile('Sudoku_Client.py')
 '''
 The save function saves a new player name. It also checks if a name already exists and avoids adding duplicate player name.
 '''
@@ -265,7 +153,7 @@ def Check_Inputs():
     while(roomsgui.selected_room==None):
 
         time.sleep(1)
-    print("GOt it..")
+    # print("GOt it..")
     proxy = roomsgui.proxy
     grid=None
     if(roomsgui.join):
@@ -299,7 +187,6 @@ def makeWindow():
     def onselect(evt):
         # Note here that Tkinter passes an event object to onselect()
         global UserName
-        #print(nameVar)
 
         name.delete(0,END)
         w = evt.widget
@@ -343,13 +230,15 @@ def makeWindow():
 
     C.pack(pady = 40)
     b = Button(C, text = 'Save Player', command = lambda:save(nameVar))
-    b1 = Button(C, text = 'Enter', command = lambda:openServer(won))
+    b1 = Button(C, text = 'Enter', command = lambda:openServer(won,name.get()))
     b4 = Button(C, text = 'Cancel', command = lambda:exit(sys))
     b.pack(side = LEFT, padx = 20)
     b1.pack(side = LEFT, padx = 20)
     b4.pack(side = RIGHT, padx = 20)
     frame2.pack()
     return won
+
+
 
 
 

@@ -2,10 +2,6 @@ import socket, pdb
 import future_builtins
 import future
 
-# MAX_CLIENTS = 30
-# PORT = 12345
-# QUIT_STRING = '<$quit$>'
-
 import random
 from objects import SudokuSquare
 from objects import SudokuGrid
@@ -19,15 +15,10 @@ from objects import GameResources
 
 PyChat Util handles server's complete reception according to the client's
 particular requests. Our approach creates different rooms in a Hall. So we have
-declared a Hall Class and a Room class for these purpose. Also every player has 
-its own properties like name and socket address, So there is a Player class to handle
-this information.
+declared a Hall Class and a Room class for these purpose.
 
 Every client is given the liberty to either join an existing room or
 create new room in the Hall.
-
-The Client's messages are handled here according to the signature terms
-which are currently known by both the client and the server side.
 
 '''
 
@@ -67,7 +58,10 @@ class Hall:
     def Welcome_and_getList(self, new_player, player_id):
         return self.list_rooms()
 
-
+    """
+        returns a Tuple (True and roomnames) if room_names is not empty
+                      (false and None) if room_names is empty 
+    """
     def list_rooms(self):
         if len(self.rooms) == 0:
            return False, None
@@ -159,17 +153,3 @@ class Room:
 
 
 #=============================================================================================
-
-#
-# class Player:
-#     """
-#     The Player class for storing socket information and name of every player
-#     """
-#
-#     def __init__(self, socket, name = "new"):
-#         socket.setblocking(0)
-#         self.socket = socket
-#         self.name = name
-#
-#     def fileno(self):
-#         return self.socket.fileno()

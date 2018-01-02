@@ -1,19 +1,32 @@
 from tkinter import *
 import tkinter.messagebox
 from tkinter import font  as tkfont
-# import Sudoku_Client as client
+
 from xmlrpclib import ServerProxy
+
+###############################################################################
 
 selected_room=None
 join=False
 proxy=None
 
-def show_entry_fields(roomname,roomlist,wen):
+
+###############################################################################
+
+'''
+    This method takes in a string name and roomlist and verifies if that
+    name already exists in the roomlist or not.
+'''
+
+def check_ifExist(roomname,roomlist,wen):
     global selected_room
     global join
     RoomName = roomname
-    print(roomlist)
-    print(RoomName)
+
+    if not roomname:
+        tkinter.messagebox.showinfo("error", "Please Enter a valid name")
+        return
+
     if(roomlist is not None):
         if RoomName in roomlist:
              tkinter.messagebox.showinfo("error", "Room name already exists")
@@ -23,20 +36,22 @@ def show_entry_fields(roomname,roomlist,wen):
     else:
         selected_room = RoomName
         join=False
-        wen.destroy()
+        wen.destroy()       # Destroy this GUI window
 
-    print(selected_room)
 
+
+'''
+    Main method of RoomGui that shows already created rooms and
+    also gives option to create a new room. If room already exist it shows error
+    message to change the name.
+'''
 
 def main(server_ip,server_port,username):
-    # import Sudoku_Client
-    # Sudoku_Client.test()
+
     global proxy
     global join
-    # RPC Server's socket address
+
     server = (server_ip, server_port)
-    # print(server_ip)
-    # print(server_port)
 
     try:
         proxy = ServerProxy("http://%s:%d" % server)
@@ -46,17 +61,14 @@ def main(server_ip,server_port,username):
     except Exception as e:
         #LOG.error('Communication error %s ' % str(e))
         exit(1)
-    # f3 = open("roomnames.txt", "r")
     check, data = proxy.Welcome_and_getList(username, 23212)
-    print(check)
-    print(data)
-    # suggested_names = f3.read().split("\n")
+
+
     master = Tk()
     master.geometry("500x400")
     master.title("Room Selection")
     Label(master, text="Create Room").grid(row=0)
 
-    # suggested_names = f3.read().split("\n")
     roomname=StringVar()
     e1 = Entry(master, textvariable=roomname)
     # e1.insert(10, "")
@@ -65,7 +77,7 @@ def main(server_ip,server_port,username):
 
 
     Button(master, text='Quit', command=master.quit).grid(row=3, column=0, sticky=W, pady=4)
-    Button(master, text='Enter', command=lambda: show_entry_fields((e1.get()),data,master)).grid(row=3, column=1, sticky=W, pady=4)
+    Button(master, text='Enter', command=lambda: check_ifExist((e1.get()),data,master)).grid(row=3, column=1, sticky=W, pady=4)
 
 
     def onRoomSelection(roomname,wen):
